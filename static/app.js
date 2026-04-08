@@ -26,6 +26,7 @@ const TOPIC_META = {
   policy:     { label: "⚖️ Policy",     color: "#92400e" },
   compliance: { label: "📋 Compliance", color: "#6d28d9" },
   corporate:  { label: "🏦 Corporate",  color: "#1e40af" },
+  companies:  { label: "🏗️ Companies",  color: "#0e7490" },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

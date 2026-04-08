@@ -167,6 +167,45 @@ TOPICS = [
             "ESG carbon disclosure reporting",
         ],
     },
+    {
+        "id": "companies",
+        "name": "CDR & VCM Companies",
+        "icon": "🏗️",
+        "color": "#0e7490",
+        "queries": [
+            # Registries & standards
+            "Verra VCS carbon registry news",
+            '"Gold Standard" carbon credits foundation',
+            "ICVCM integrity council voluntary carbon",
+            # CDR marketplaces
+            "Puro.earth carbon removal marketplace",
+            "CarbonFuture carbon removal credits",
+            "CDR.fyi carbon dioxide removal purchases",
+            "Supercritical carbon removal",
+            # CDR tech
+            "Climeworks direct air capture carbon",
+            '"Heirloom Carbon" carbon removal',
+            '"Charm Industrial" carbon removal',
+            '"Running Tide" ocean carbon removal',
+            '"Lithos Carbon" enhanced weathering',
+            "CULA carbon removal",
+            '"Absolute Climate" carbon removal',
+            # MRV & ratings
+            "Isometric carbon verification credits",
+            '"BeZero Carbon" ratings',
+            "Sylvera carbon credit ratings",
+            '"Carbon Direct" advisory removal',
+            # Nature-based
+            '"Mangrove Systems" blue carbon',
+            "Pachama forest carbon credits",
+            '"South Pole" carbon project',
+            "Terrasos biodiversity carbon",
+            # Market infrastructure
+            '"Climate Impact X" carbon exchange',
+            "IETA carbon market association",
+            '"Ecosystem Marketplace" carbon report',
+        ],
+    },
 ]
 
 DIRECT_FEEDS = [
@@ -705,6 +744,18 @@ def get_articles(force_refresh: bool = False) -> list[dict]:
         t = threading.Thread(target=guarded_df, args=(feed_info,), daemon=True)
         threads.append(t)
         t.start()
+
+    # Company blog scrapers (RSS-first, HTML fallback)
+    def guarded_scrape():
+        try:
+            from scrapers import fetch_all_company_blogs
+            add(fetch_all_company_blogs())
+        except Exception as exc:
+            logger.warning("Company scraper failed: %s", exc)
+
+    t = threading.Thread(target=guarded_scrape, daemon=True)
+    threads.append(t)
+    t.start()
 
     for topic in TOPICS:
         for query in topic["queries"][:3]:  # 3 queries per topic
