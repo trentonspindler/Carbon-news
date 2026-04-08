@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carbon Markets Daily</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-mark">C</div>
+        <div class="logo-text">
+          <h1>Carbon Markets Daily</h1>
+          <p>VCM · CDR · Nature-Based · Policy · Compliance</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="cache-label" id="cacheLabel">Loading…</span>
+        <div class="filter-group">
+          <select id="paywallFilter" onchange="applyFilters()" title="Filter by access">
+            <option value="all">All articles</option>
+            <option value="free">Free only</option>
+            <option value="paywalled">Paywalled only</option>
+          </select>
+        </div>
+        <button class="btn-refresh" id="refreshBtn" onclick="triggerRefresh()">
+          ↻ Refresh
+        </button>
+        <button class="btn-digest" onclick="showDigest()">📋 Digest</button>
+      </div>
+    </div>
+
+    <div class="search-row">
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Search headlines, sources…"
+        oninput="debounceSearch(this.value)"
+        autocomplete="off"
+      />
+    </div>
+
+    <nav class="topic-tabs" id="topicTabs">
+      <button class="tab active" data-topic="all" onclick="setTopic('all',this)">
+        All Topics
+      </button>
+      {% for topic in topics %}
+      <button
+        class="tab"
+        data-topic="{{ topic.id }}"
+        onclick="setTopic('{{ topic.id }}',this)"
+        style="--tc: {{ topic.color }}"
+      >
+        {{ topic.icon }} {{ topic.name }}
+      </button>
+      {% endfor %}
+    </nav>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- Loading -->
+    <div id="loadingState" class="loading-state">
+      <div class="spinner"></div>
+      <p>Fetching the latest carbon market intelligence…</p>
+    </div>
+
+    <!-- Stats bar -->
+    <div id="statsBar" class="stats-bar hidden">
+      <span id="statsText"></span>
+      <div class="access-legend">
+        <span><span class="pill pill-free">✓ Free</span> open access</span>
+        <span><span class="pill pill-pay">🔒 Paywalled</span> summary shown, link provided</span>
+        <span><span class="pill pill-partial">⚠ Partial</span> may require subscription</span>
+      </div>
+    </div>
+
+    <!-- Article grid -->
+    <div id="articleGrid" class="article-grid hidden"></div>
+
+    <!-- Digest panel (hidden by default) -->
+    <div id="digestPanel" class="digest-panel hidden">
+      <div class="digest-header">
+        <h2>📋 This Week's Digest</h2>
+        <button onclick="hideDigest()" class="btn-close">✕ Close</button>
+      </div>
+      <div id="digestContent" class="digest-content"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="empty-state hidden">
+      <p>No articles found. Try a different topic or search term.</p>
+    </div>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>Carbon Markets Daily</strong> — aggregated from Google News and direct RSS feeds.
+        Updates every 30 minutes.
+      </div>
+      <div class="footer-sources">
+        Sources include Carbon Brief · Yale E360 · Climate Home News · Inside Climate News ·
+        The Guardian · Carbon180 · IISD · and Google News for broader coverage.
+      </div>
+      <div class="footer-disclaimer">
+        Paywall detection is best-effort. Summaries for paywalled articles are sourced from
+        RSS feeds and article metadata — not the full text.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
