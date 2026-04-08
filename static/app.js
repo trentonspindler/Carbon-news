@@ -4,19 +4,18 @@
 
 // ── State ────────────────────────────────────────────────────────────────────
 
-let currentTopic     = "all";
-let currentRegion    = "all";
-let currentSearch    = "";
-let currentPaywall   = "all";
-let debounceTimer    = null;
-let refreshPoller    = null;
-let refreshing       = false;
+let currentTopic      = "all";
+let currentRegion     = "all";
+let currentSearch     = "";
+let currentPaywall    = "all";
+let currentWeekOffset = 0;       // 0 = this week, -1 = last week, etc.
+let debounceTimer     = null;
+let refreshPoller     = null;
+let refreshing        = false;
 
-// Keep the full article list so filters work client-side
-let allArticles      = [];
-
-// Region metadata (flag + name) populated from DOM on load
-const REGION_META    = {};
+let allArticles       = [];
+const REGION_META     = {};      // populated from DOM on load
+let weekMeta          = [];      // populated from /api/weeks
 
 // ── Topic metadata ────────────────────────────────────────────────────────────
 
@@ -75,6 +74,7 @@ async function loadArticles({ showSpinner = true } = {}) {
       region:    currentRegion,
       search:    currentSearch,
       paywalled: currentPaywall,
+      week:      currentWeekOffset,
     });
     const res  = await fetch(`/api/articles?${params}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -95,6 +95,12 @@ function renderArticles(articles) {
   $id("loadingState").classList.add("hidden");
 
   if (!articles.length) {
+    const msg = $id("emptyMsg");
+    if (msg) {
+      msg.textContent = currentWeekOffset < 0
+        ? "No archived articles for this week yet — history builds up as the app runs."
+        : "No articles found. Try a different topic or search term.";
+    }
     $id("emptyState").classList.remove("hidden");
     $id("articleGrid").classList.add("hidden");
     $id("statsBar").classList.add("hidden");
@@ -233,6 +239,94 @@ function applyFilters() {
   loadArticles();
 }
 
+// ── Week navigation ───────────────────────────────────────────────────────────
+
+function goWeek(delta) {
+  const next = currentWeekOffset + delta;
+  if (next > 0) return;                         // can't go into the future
+  if (next < -(weekMeta.length - 1)) return;    // can't go past available data
+  jumpToWeek(next);
+}
+
+function jumpToWeek(offset) {
+  currentWeekOffset = offset;
+  renderWeekPills();
+  loadArticles();
+}
+
+function renderWeekPills() {
+  const container = $id("weekPills");
+  const prevBtn   = $id("weekPrev");
+  const nextBtn   = $id("weekNext");
+  if (!container) return;
+
+  // Build pills from weekMeta (always show at least current + last 4)
+  const slots = weekMeta.length ? weekMeta : buildDefaultWeeks(5);
+
+  container.innerHTML = slots.map(w => {
+    const label  = weekLabel(w.offset);
+    const dates  = weekDates(w.week_start);
+    const count  = w.count || 0;
+    const active = w.offset === currentWeekOffset ? "active" : "";
+    const empty  = (w.offset !== 0 && count === 0) ? "empty" : "";
+    const title  = count > 0 ? `${count} articles` : w.offset === 0 ? "Live" : "No data yet";
+    return `<button class="week-pill ${active} ${empty}"
+              data-offset="${w.offset}"
+              onclick="jumpToWeek(${w.offset})"
+              title="${title}">
+      ${label}
+      <span class="week-pill-dates">${dates}</span>
+      ${count > 0 && w.offset !== 0 ? `<span class="week-pill-count">${count}</span>` : ""}
+    </button>`;
+  }).join("");
+
+  // Arrow states
+  if (prevBtn) prevBtn.disabled = currentWeekOffset <= -(slots.length - 1);
+  if (nextBtn) nextBtn.disabled = currentWeekOffset >= 0;
+}
+
+function weekLabel(offset) {
+  if (offset === 0)  return "This Week";
+  if (offset === -1) return "Last Week";
+  return `${Math.abs(offset)} Weeks Ago`;
+}
+
+function weekDates(isoStart) {
+  if (!isoStart) return "";
+  try {
+    const start = new Date(isoStart);
+    const end   = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const fmt = d => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    // If same month show "Apr 1–7", else "Mar 30 – Apr 5"
+    if (start.getMonth() === end.getMonth()) {
+      return `${fmt(start).replace(/\s\d+/, "")} ${start.getDate()}–${end.getDate()}`;
+    }
+    return `${fmt(start)} – ${fmt(end)}`;
+  } catch { return ""; }
+}
+
+function buildDefaultWeeks(n) {
+  // Before /api/weeks loads, show placeholder pills
+  const now     = new Date();
+  const monday  = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0,0,0,0);
+  return Array.from({ length: n }, (_, i) => {
+    const start = new Date(monday);
+    start.setDate(monday.getDate() - i * 7);
+    return { offset: -i, week_start: start.toISOString(), count: i === 0 ? 1 : 0 };
+  });
+}
+
+async function loadWeekMeta() {
+  try {
+    const data = await fetch("/api/weeks").then(r => r.json());
+    weekMeta = data;
+    renderWeekPills();
+  } catch { /* fallback to default pills already shown */ }
+}
+
 function debounceSearch(val) {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
@@ -353,17 +447,18 @@ setInterval(() => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Build REGION_META from the rendered region chips in the DOM
+  // Build REGION_META from rendered chips
   document.querySelectorAll(".region-chip[data-region]").forEach(chip => {
     const id = chip.dataset.region;
     if (id && id !== "all") {
-      const text = chip.textContent.trim();
+      const text  = chip.textContent.trim();
       const parts = text.split(" ");
-      const flag  = parts[0];
-      const name  = parts.slice(1).join(" ");
-      REGION_META[id] = { flag, name };
+      REGION_META[id] = { flag: parts[0], name: parts.slice(1).join(" ") };
     }
   });
 
+  // Render default week pills immediately, then fetch real counts
+  renderWeekPills();
+  loadWeekMeta();   // updates pill counts asynchronously
   loadArticles();
 });

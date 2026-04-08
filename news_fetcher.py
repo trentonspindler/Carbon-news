@@ -492,6 +492,7 @@ def make_id(url: str) -> str:
 # ---------------------------------------------------------------------------
 
 ONE_WEEK = timedelta(days=7)
+LOOKBACK = timedelta(days=28)  # fetch up to 4 weeks back so DB builds history
 
 
 def fetch_google_news(query: str, max_results: int = 10) -> list[dict]:
@@ -502,7 +503,7 @@ def fetch_google_news(query: str, max_results: int = 10) -> list[dict]:
     )
     try:
         feed = feedparser.parse(url, request_headers=HEADERS)
-        cutoff = datetime.now(timezone.utc) - ONE_WEEK
+        cutoff = datetime.now(timezone.utc) - LOOKBACK
         articles = []
 
         for entry in feed.entries[:max_results]:
@@ -554,7 +555,7 @@ def fetch_google_news(query: str, max_results: int = 10) -> list[dict]:
 def fetch_direct_feed(feed_info: dict) -> list[dict]:
     try:
         feed = feedparser.parse(feed_info["url"], request_headers=HEADERS)
-        cutoff = datetime.now(timezone.utc) - ONE_WEEK
+        cutoff = datetime.now(timezone.utc) - LOOKBACK
         articles = []
 
         for entry in feed.entries[:25]:
@@ -743,11 +744,35 @@ def get_articles(force_refresh: bool = False) -> list[dict]:
 
     all_articles.sort(key=sort_key, reverse=True)
 
+    # Persist everything to DB (builds historical archive)
+    try:
+        from db import save_articles
+        save_articles(all_articles)
+    except Exception as exc:
+        logger.warning("DB save failed: %s", exc)
+
+    # In-memory cache holds only current-week articles (keeps it lean)
+    current_week_cutoff = datetime.now(timezone.utc) - ONE_WEEK
+    cached = [a for a in all_articles if _article_after(a, current_week_cutoff)]
+
     with _cache_lock:
-        _cache[key] = all_articles
+        _cache[key] = cached
         _cache_time[key] = now
 
-    return all_articles
+    return cached
+
+
+def _article_after(article: dict, cutoff: datetime) -> bool:
+    p = article.get("published")
+    if not p:
+        return True  # undated articles always shown in current week
+    try:
+        dt = datetime.fromisoformat(p)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt >= cutoff
+    except Exception:
+        return True
 
 
 def _enrich_summary(article: dict):

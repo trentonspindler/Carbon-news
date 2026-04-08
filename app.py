@@ -7,10 +7,12 @@ import threading
 
 from flask import Flask, jsonify, render_template, request
 
+from db import get_articles_for_week, get_available_weeks, init_db
 from news_fetcher import REGIONS, TOPICS, get_articles, get_cache_age_minutes
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 app = Flask(__name__)
+init_db()
 
 _refresh_lock = threading.Lock()
 _refreshing = False
@@ -23,12 +25,20 @@ def index():
 
 @app.route("/api/articles")
 def articles():
-    topic = request.args.get("topic", "all").strip()
-    region = request.args.get("region", "all").strip()
-    search = request.args.get("search", "").lower().strip()
-    paywalled_filter = request.args.get("paywalled", "all")  # all | free | paywalled
+    topic            = request.args.get("topic",    "all").strip()
+    region           = request.args.get("region",   "all").strip()
+    search           = request.args.get("search",   "").lower().strip()
+    paywalled_filter = request.args.get("paywalled","all")
+    week_offset      = int(request.args.get("week", "0"))
 
-    data = get_articles()
+    # Week 0 = live cache; past weeks come from the DB
+    if week_offset == 0:
+        data = get_articles()
+        week_start = week_end = None
+        cache_age  = get_cache_age_minutes()
+    else:
+        data, week_start, week_end = get_articles_for_week(week_offset)
+        cache_age = None  # DB data, not cached
 
     if topic != "all":
         data = [a for a in data if a.get("topic") == topic]
@@ -38,11 +48,10 @@ def articles():
 
     if search:
         data = [
-            a
-            for a in data
-            if search in (a.get("title") or "").lower()
+            a for a in data
+            if search in (a.get("title")   or "").lower()
             or search in (a.get("summary") or "").lower()
-            or search in (a.get("source") or "").lower()
+            or search in (a.get("source")  or "").lower()
         ]
 
     if paywalled_filter == "free":
@@ -54,13 +63,21 @@ def articles():
 
     return jsonify(
         {
-            "articles": data,
-            "total": len(data),
-            "free_count": len(data) - paywalled_count,
-            "paywalled_count": paywalled_count,
-            "cache_age_minutes": get_cache_age_minutes(),
+            "articles":         data,
+            "total":            len(data),
+            "free_count":       len(data) - paywalled_count,
+            "paywalled_count":  paywalled_count,
+            "cache_age_minutes": cache_age,
+            "week_offset":      week_offset,
+            "week_start":       week_start.isoformat() if week_start else None,
+            "week_end":         week_end.isoformat()   if week_end   else None,
         }
     )
+
+
+@app.route("/api/weeks")
+def weeks():
+    return jsonify(get_available_weeks())
 
 
 @app.route("/api/refresh", methods=["POST"])

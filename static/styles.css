@@ -179,6 +179,79 @@ body {
 .tab:hover               { color: #fff; background: rgba(255,255,255,.06); }
 .tab.active              { color: #fff; border-bottom-color: var(--accent); background: rgba(34,197,94,.1); }
 
+/* ---- Week navigation ---- */
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 24px;
+  background: #111d11;
+  border-top: 1px solid #1a2e1a;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.week-arrow {
+  background: transparent;
+  border: 1px solid #2a4a2a;
+  color: #6a9a6a;
+  border-radius: 6px;
+  width: 28px; height: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color .15s, border-color .15s, background .15s;
+  font-family: var(--font);
+  display: flex; align-items: center; justify-content: center;
+}
+.week-arrow:hover:not(:disabled) { color: #c6e4c8; border-color: var(--accent); background: rgba(34,197,94,.08); }
+.week-arrow:disabled { opacity: .3; cursor: not-allowed; }
+
+.week-pills {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+.week-pills::-webkit-scrollbar { display: none; }
+
+.week-pill {
+  padding: 4px 12px;
+  background: transparent;
+  color: #5a8a5a;
+  border: 1px solid #1e3e1e;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color .15s, background .15s, border-color .15s;
+  position: relative;
+}
+.week-pill:hover:not(.empty)    { color: #c6e4c8; border-color: #3a6a3a; background: rgba(255,255,255,.04); }
+.week-pill.active               { color: #fff; border-color: var(--accent); background: rgba(34,197,94,.12); font-weight: 600; }
+.week-pill.empty                { opacity: .4; cursor: not-allowed; }
+
+.week-pill-dates {
+  display: block;
+  font-size: 9px;
+  opacity: .65;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.week-pill-count {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 9px;
+  opacity: .7;
+}
+
 /* Region chips row */
 .region-tabs {
   display: flex;
@@ -520,6 +593,7 @@ body {
   .logo-text p    { display: none; }
   .search-row     { padding: 0 14px 8px; }
   .topic-tabs     { padding: 0 14px; }
+  .week-nav       { padding: 7px 14px; }
   .region-tabs    { padding: 6px 14px 8px; }
   .main           { padding: 14px; }
   .article-grid   { grid-template-columns: 1fr; }

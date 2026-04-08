@@ -65,6 +65,15 @@
       {% endfor %}
     </nav>
 
+    <!-- Week navigation -->
+    <div class="week-nav" id="weekNav">
+      <button class="week-arrow" id="weekPrev" onclick="goWeek(-1)" title="Previous week">&#8592;</button>
+      <div class="week-pills" id="weekPills">
+        <!-- populated by JS -->
+      </div>
+      <button class="week-arrow" id="weekNext" onclick="goWeek(1)" title="Next week" disabled>&#8594;</button>
+    </div>
+
     <nav class="region-tabs" id="regionTabs">
       <button class="region-chip active" data-region="all" onclick="setRegion('all',this)">
         🌐 All Regions
@@ -117,7 +126,7 @@
 
     <!-- Empty state -->
     <div id="emptyState" class="empty-state hidden">
-      <p>No articles found. Try a different topic or search term.</p>
+      <p id="emptyMsg">No articles found. Try a different topic or search term.</p>
     </div>
 
   </main>
