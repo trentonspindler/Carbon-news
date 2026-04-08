@@ -101,10 +101,23 @@ function renderArticles(articles) {
 
   if (!articles.length) {
     const msg = $id("emptyMsg");
+    const anyFilterActive = currentTopic !== "all" || currentRegion !== "all" ||
+                            currentSource !== "all" || currentSearch || currentWeekOffset !== 0;
+
+    if (!anyFilterActive) {
+      // Likely still warming up on first deploy — auto-retry
+      if (msg) msg.innerHTML = "Fetching articles… <br><small>First load can take up to 30 seconds.</small>";
+      $id("emptyState").classList.remove("hidden");
+      $id("articleGrid").classList.add("hidden");
+      $id("statsBar").classList.add("hidden");
+      setTimeout(() => loadArticles({ showSpinner: true }), 8000);
+      return;
+    }
+
     if (msg) {
       msg.textContent = currentWeekOffset < 0
         ? "No archived articles for this week yet — history builds up as the app runs."
-        : "No articles found. Try a different topic or search term.";
+        : "No articles match these filters.";
     }
     $id("emptyState").classList.remove("hidden");
     $id("articleGrid").classList.add("hidden");
@@ -310,7 +323,10 @@ function renderWeekPills() {
   // Build pills from weekMeta (always show at least current + last 4)
   const slots = weekMeta.length ? weekMeta : buildDefaultWeeks(5);
 
-  container.innerHTML = slots.map(w => {
+  // Render oldest → newest left-to-right so ← = older, → = newer
+  const ordered = [...slots].reverse();
+
+  container.innerHTML = ordered.map(w => {
     const label  = weekLabel(w.offset);
     const dates  = weekDates(w.week_start);
     const count  = w.count || 0;
@@ -327,7 +343,8 @@ function renderWeekPills() {
     </button>`;
   }).join("");
 
-  // Arrow states
+  // ← = go to older week (more negative offset) — disabled at oldest
+  // → = go to newer week (less negative offset) — disabled at current week
   if (prevBtn) prevBtn.disabled = currentWeekOffset <= -(slots.length - 1);
   if (nextBtn) nextBtn.disabled = currentWeekOffset >= 0;
 }
