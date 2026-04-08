@@ -179,6 +179,69 @@ body {
 .tab:hover               { color: #fff; background: rgba(255,255,255,.06); }
 .tab.active              { color: #fff; border-bottom-color: var(--accent); background: rgba(34,197,94,.1); }
 
+/* Region chips row */
+.region-tabs {
+  display: flex;
+  gap: 5px;
+  padding: 6px 24px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: #0a160a;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  border-top: 1px solid #1a2e1a;
+}
+.region-tabs::-webkit-scrollbar { display: none; }
+
+.region-chip {
+  padding: 4px 11px;
+  background: transparent;
+  color: #4a7a4a;
+  border: 1px solid #1e3e1e;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.region-chip:hover  { color: #c6e4c8; border-color: #3a6a3a; background: rgba(255,255,255,.04); }
+.region-chip.active { color: #86c996; border-color: var(--accent); background: rgba(34,197,94,.1); }
+
+/* Region banner (shown when a region is active) */
+.region-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(34,197,94,.07);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--accent-dark);
+  margin-bottom: 14px;
+}
+
+/* Region tags on cards */
+.card-regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.region-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  white-space: nowrap;
+}
+
 /* ---- Main ---- */
 
 .main {
@@ -457,6 +520,7 @@ body {
   .logo-text p    { display: none; }
   .search-row     { padding: 0 14px 8px; }
   .topic-tabs     { padding: 0 14px; }
+  .region-tabs    { padding: 6px 14px 8px; }
   .main           { padding: 14px; }
   .article-grid   { grid-template-columns: 1fr; }
   .stats-bar      { flex-direction: column; align-items: flex-start; }

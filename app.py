@@ -7,7 +7,7 @@ import threading
 
 from flask import Flask, jsonify, render_template, request
 
-from news_fetcher import TOPICS, get_articles, get_cache_age_minutes
+from news_fetcher import REGIONS, TOPICS, get_articles, get_cache_age_minutes
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 app = Flask(__name__)
@@ -18,12 +18,13 @@ _refreshing = False
 
 @app.route("/")
 def index():
-    return render_template("index.html", topics=TOPICS)
+    return render_template("index.html", topics=TOPICS, regions=REGIONS)
 
 
 @app.route("/api/articles")
 def articles():
     topic = request.args.get("topic", "all").strip()
+    region = request.args.get("region", "all").strip()
     search = request.args.get("search", "").lower().strip()
     paywalled_filter = request.args.get("paywalled", "all")  # all | free | paywalled
 
@@ -31,6 +32,9 @@ def articles():
 
     if topic != "all":
         data = [a for a in data if a.get("topic") == topic]
+
+    if region != "all":
+        data = [a for a in data if region in (a.get("regions") or [])]
 
     if search:
         data = [

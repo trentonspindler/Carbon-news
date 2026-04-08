@@ -279,6 +279,197 @@ DIRECT_FEEDS = [
 ]
 
 # ---------------------------------------------------------------------------
+# Regions — geographic tags applied via keyword detection
+# ---------------------------------------------------------------------------
+
+REGIONS = [
+    {
+        "id": "us",
+        "name": "United States",
+        "flag": "🇺🇸",
+        "keywords": [
+            "united states carbon", "u.s. carbon", "u.s. climate",
+            "american carbon", "us carbon market", "us epa carbon",
+            "federal carbon", "congress carbon", "senate climate",
+        ],
+    },
+    {
+        "id": "california",
+        "name": "California",
+        "flag": "🏛️",
+        "keywords": [
+            "california carbon", "california cap-and-trade",
+            "carb carbon", "california air resources board",
+            "california offset", "california climate",
+        ],
+    },
+    {
+        "id": "louisiana",
+        "name": "Louisiana",
+        "flag": "🌊",
+        "keywords": [
+            "louisiana carbon", "louisiana blue carbon",
+            "louisiana wetland", "louisiana offset", "louisiana climate",
+            "gulf coast carbon", "louisiana forest carbon",
+        ],
+    },
+    {
+        "id": "texas",
+        "name": "Texas",
+        "flag": "⭐",
+        "keywords": [
+            "texas carbon", "texas carbon capture", "texas ccs",
+            "permian carbon", "texas climate", "texas emissions",
+        ],
+    },
+    {
+        "id": "eu",
+        "name": "European Union",
+        "flag": "🇪🇺",
+        "keywords": [
+            "eu ets", "european union carbon", "european carbon market",
+            "brussels carbon", "cbam", "carbon border adjustment",
+            "eua carbon", "europe carbon credit", "eu climate",
+        ],
+    },
+    {
+        "id": "uk",
+        "name": "United Kingdom",
+        "flag": "🇬🇧",
+        "keywords": [
+            "uk ets", "united kingdom carbon", "britain carbon",
+            "british carbon", "uk carbon market", "uk climate",
+        ],
+    },
+    {
+        "id": "finland",
+        "name": "Finland",
+        "flag": "🇫🇮",
+        "keywords": [
+            "finland carbon", "finnish carbon", "finland climate",
+            "finland cdr", "finland direct air capture",
+        ],
+    },
+    {
+        "id": "norway",
+        "name": "Norway",
+        "flag": "🇳🇴",
+        "keywords": [
+            "norway carbon", "norwegian carbon", "longship ccs",
+            "norway ccs", "norway climate", "norway carbon capture",
+        ],
+    },
+    {
+        "id": "sweden",
+        "name": "Sweden",
+        "flag": "🇸🇪",
+        "keywords": [
+            "sweden carbon", "swedish carbon", "stockholm carbon",
+            "sweden cdr", "sweden climate",
+        ],
+    },
+    {
+        "id": "brazil",
+        "name": "Brazil",
+        "flag": "🇧🇷",
+        "keywords": [
+            "brazil carbon", "brazilian carbon", "amazon carbon",
+            "deforestation brazil", "brazil redd", "brazil climate",
+            "brazil carbon market",
+        ],
+    },
+    {
+        "id": "indonesia",
+        "name": "Indonesia",
+        "flag": "🇮🇩",
+        "keywords": [
+            "indonesia carbon", "indonesian carbon", "indonesia forest carbon",
+            "indonesia redd", "borneo carbon", "indonesia climate",
+        ],
+    },
+    {
+        "id": "australia",
+        "name": "Australia",
+        "flag": "🇦🇺",
+        "keywords": [
+            "australia carbon", "australian carbon", "erf australia",
+            "australia carbon credit", "australia climate",
+            "clean energy regulator australia",
+        ],
+    },
+    {
+        "id": "canada",
+        "name": "Canada",
+        "flag": "🇨🇦",
+        "keywords": [
+            "canada carbon", "canadian carbon", "canada carbon pricing",
+            "canada climate", "british columbia carbon",
+        ],
+    },
+    {
+        "id": "singapore",
+        "name": "Singapore",
+        "flag": "🇸🇬",
+        "keywords": [
+            "singapore carbon", "singapore carbon market",
+            "singapore carbon credit", "singapore climate",
+        ],
+    },
+    {
+        "id": "japan",
+        "name": "Japan",
+        "flag": "🇯🇵",
+        "keywords": [
+            "japan carbon", "japanese carbon", "gx league",
+            "japan carbon market", "japan climate",
+            "japan carbon credit", "japan ets",
+        ],
+    },
+    {
+        "id": "china",
+        "name": "China",
+        "flag": "🇨🇳",
+        "keywords": [
+            "china carbon", "chinese carbon", "china ets",
+            "china emissions trading", "china carbon market",
+            "china climate",
+        ],
+    },
+    {
+        "id": "africa",
+        "name": "Africa",
+        "flag": "🌍",
+        "keywords": [
+            "kenya carbon", "africa carbon", "african carbon",
+            "africa carbon market", "africa carbon credit",
+            "ghana carbon", "nigeria carbon", "south africa carbon",
+        ],
+    },
+    {
+        "id": "colombia",
+        "name": "Colombia",
+        "flag": "🇨🇴",
+        "keywords": [
+            "colombia carbon", "colombian carbon", "colombia carbon market",
+            "colombia redd", "colombia climate",
+        ],
+    },
+]
+
+
+def detect_regions(title: str, summary: str, source: str = "") -> list[str]:
+    """Return list of region IDs whose keywords appear in the article text."""
+    text = f"{title} {summary} {source}".lower()
+    matched = []
+    for region in REGIONS:
+        for kw in region["keywords"]:
+            if kw in text:
+                matched.append(region["id"])
+                break
+    return matched
+
+
+# ---------------------------------------------------------------------------
 # Cache
 # ---------------------------------------------------------------------------
 
@@ -404,6 +595,7 @@ def fetch_google_news(query: str, max_results: int = 10) -> list[dict]:
                         "partial_paywall": is_partial_paywall(source),
                         "image": None,
                         "via": "Google News",
+                        "regions": detect_regions(title, summary, source),
                     }
                 )
             except Exception as exc:
@@ -473,6 +665,7 @@ def fetch_direct_feed(feed_info: dict) -> list[dict]:
                         "image": image,
                         "topic": feed_info["topic"],
                         "via": "Direct Feed",
+                        "regions": detect_regions(title, summary, source),
                     }
                 )
             except Exception as exc:

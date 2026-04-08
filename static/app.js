@@ -5,6 +5,7 @@
 // ── State ────────────────────────────────────────────────────────────────────
 
 let currentTopic     = "all";
+let currentRegion    = "all";
 let currentSearch    = "";
 let currentPaywall   = "all";
 let debounceTimer    = null;
@@ -13,6 +14,9 @@ let refreshing       = false;
 
 // Keep the full article list so filters work client-side
 let allArticles      = [];
+
+// Region metadata (flag + name) populated from DOM on load
+const REGION_META    = {};
 
 // ── Topic metadata ────────────────────────────────────────────────────────────
 
@@ -62,11 +66,13 @@ async function loadArticles({ showSpinner = true } = {}) {
     $id("statsBar").classList.add("hidden");
     $id("emptyState").classList.add("hidden");
     $id("digestPanel").classList.add("hidden");
+    $id("regionBanner").classList.add("hidden");
   }
 
   try {
     const params = new URLSearchParams({
       topic:     currentTopic,
+      region:    currentRegion,
       search:    currentSearch,
       paywalled: currentPaywall,
     });
@@ -129,6 +135,17 @@ function buildCard(a) {
     ? `<span class="card-topic" style="background:${topicInfo.color}18;color:${topicInfo.color}">${topicInfo.label}</span>`
     : `<span></span>`;
 
+  // Region tags (show up to 3 to avoid clutter)
+  const regionTags = (a.regions || []).slice(0, 3).map(rid => {
+    const rm = REGION_META[rid];
+    return rm
+      ? `<span class="region-tag" title="${rm.name}" onclick="setRegionById('${rid}')">${rm.flag} ${rm.name}</span>`
+      : "";
+  }).join("");
+  const regionHtml = regionTags
+    ? `<div class="card-regions">${regionTags}</div>`
+    : "";
+
   const readLabel = isPaywall ? "View →" : "Read →";
   const dateStr   = a.published_rel || relDate(a.published);
 
@@ -145,6 +162,7 @@ function buildCard(a) {
   </a>
   ${summaryHtml}
   ${paywallNote}
+  ${regionHtml}
   <div class="card-footer">
     ${topicTag}
     <a class="card-read" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">
@@ -179,6 +197,35 @@ function setTopic(topic, btn) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   if (btn) btn.classList.add("active");
   loadArticles();
+}
+
+function setRegion(region, btn) {
+  currentRegion = region;
+  document.querySelectorAll(".region-chip").forEach(c => c.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  updateRegionBanner();
+  loadArticles();
+}
+
+function setRegionById(regionId) {
+  const btn = document.querySelector(`.region-chip[data-region="${regionId}"]`);
+  setRegion(regionId, btn);
+  // Scroll the region tab row to show the selected chip
+  if (btn) btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+}
+
+function updateRegionBanner() {
+  const banner = $id("regionBanner");
+  if (!banner) return;
+  if (currentRegion === "all") {
+    banner.classList.add("hidden");
+    return;
+  }
+  const rm = REGION_META[currentRegion];
+  if (rm) {
+    banner.textContent = `${rm.flag} Showing articles tagged: ${rm.name}`;
+    banner.classList.remove("hidden");
+  }
 }
 
 function applyFilters() {
@@ -306,5 +353,17 @@ setInterval(() => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Build REGION_META from the rendered region chips in the DOM
+  document.querySelectorAll(".region-chip[data-region]").forEach(chip => {
+    const id = chip.dataset.region;
+    if (id && id !== "all") {
+      const text = chip.textContent.trim();
+      const parts = text.split(" ");
+      const flag  = parts[0];
+      const name  = parts.slice(1).join(" ");
+      REGION_META[id] = { flag, name };
+    }
+  });
+
   loadArticles();
 });
