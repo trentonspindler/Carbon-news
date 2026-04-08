@@ -25,97 +25,93 @@
       </div>
       <div class="header-actions">
         <span class="cache-label" id="cacheLabel">Loading…</span>
-        <div class="filter-group">
-          <select id="paywallFilter" onchange="applyFilters()" title="Filter by access">
+        <button class="btn-refresh" id="refreshBtn" onclick="triggerRefresh()">↻ Refresh</button>
+        <button class="btn-digest" onclick="showDigest()">📋 Digest</button>
+      </div>
+    </div>
+
+    <!-- Search + filter bar -->
+    <div class="filter-bar">
+      <input
+        id="searchInput"
+        class="filter-search"
+        type="search"
+        placeholder="🔍 Search headlines, sources…"
+        oninput="debounceSearch(this.value)"
+        autocomplete="off"
+      />
+
+      <div class="filter-selects">
+        <div class="fselect-wrap">
+          <label class="fselect-label">Topic</label>
+          <select id="topicSelect" onchange="setTopic(this.value)">
+            <option value="all">All Topics</option>
+            {% for topic in topics %}
+            <option value="{{ topic.id }}">{{ topic.icon }} {{ topic.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="fselect-wrap">
+          <label class="fselect-label">Region</label>
+          <select id="regionSelect" onchange="setRegion(this.value)">
+            <option value="all">🌐 All Regions</option>
+            {% for r in regions %}
+            <option value="{{ r.id }}">{{ r.flag }} {{ r.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="fselect-wrap">
+          <label class="fselect-label">Source</label>
+          <select id="sourceSelect" onchange="setSource(this.value)">
+            <option value="all">All Sources</option>
+            <!-- populated by JS after articles load -->
+          </select>
+        </div>
+
+        <div class="fselect-wrap">
+          <label class="fselect-label">Access</label>
+          <select id="paywallFilter" onchange="applyFilters()">
             <option value="all">All articles</option>
             <option value="free">Free only</option>
             <option value="paywalled">Paywalled only</option>
           </select>
         </div>
-        <button class="btn-refresh" id="refreshBtn" onclick="triggerRefresh()">
-          ↻ Refresh
-        </button>
-        <button class="btn-digest" onclick="showDigest()">📋 Digest</button>
       </div>
     </div>
 
-    <div class="search-row">
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Search headlines, sources…"
-        oninput="debounceSearch(this.value)"
-        autocomplete="off"
-      />
-    </div>
-
-    <nav class="topic-tabs" id="topicTabs">
-      <button class="tab active" data-topic="all" onclick="setTopic('all',this)">
-        All Topics
-      </button>
-      {% for topic in topics %}
-      <button
-        class="tab"
-        data-topic="{{ topic.id }}"
-        onclick="setTopic('{{ topic.id }}',this)"
-        style="--tc: {{ topic.color }}"
-      >
-        {{ topic.icon }} {{ topic.name }}
-      </button>
-      {% endfor %}
-    </nav>
+    <!-- Active filter pills (shown when any filter is active) -->
+    <div id="activeFilters" class="active-filters hidden"></div>
 
     <!-- Week navigation -->
     <div class="week-nav" id="weekNav">
       <button class="week-arrow" id="weekPrev" onclick="goWeek(-1)" title="Previous week">&#8592;</button>
-      <div class="week-pills" id="weekPills">
-        <!-- populated by JS -->
-      </div>
+      <div class="week-pills" id="weekPills"></div>
       <button class="week-arrow" id="weekNext" onclick="goWeek(1)" title="Next week" disabled>&#8594;</button>
     </div>
-
-    <nav class="region-tabs" id="regionTabs">
-      <button class="region-chip active" data-region="all" onclick="setRegion('all',this)">
-        🌐 All Regions
-      </button>
-      {% for r in regions %}
-      <button
-        class="region-chip"
-        data-region="{{ r.id }}"
-        onclick="setRegion('{{ r.id }}',this)"
-      >
-        {{ r.flag }} {{ r.name }}
-      </button>
-      {% endfor %}
-    </nav>
   </header>
 
   <!-- ===== MAIN ===== -->
   <main class="main">
 
-    <!-- Loading -->
     <div id="loadingState" class="loading-state">
       <div class="spinner"></div>
       <p>Fetching the latest carbon market intelligence…</p>
     </div>
 
-    <!-- Stats bar -->
     <div id="statsBar" class="stats-bar hidden">
       <span id="statsText"></span>
       <div class="access-legend">
         <span><span class="pill pill-free">✓ Free</span> open access</span>
-        <span><span class="pill pill-pay">🔒 Paywalled</span> summary shown, link provided</span>
-        <span><span class="pill pill-partial">⚠ Partial</span> may require subscription</span>
+        <span><span class="pill pill-pay">🔒 Paywalled</span> summary shown</span>
+        <span><span class="pill pill-partial">⚠ Partial</span> may require login</span>
       </div>
     </div>
 
-    <!-- Active region banner -->
-    <div id="regionBanner" class="region-banner hidden"></div>
-
-    <!-- Article grid -->
     <div id="articleGrid" class="article-grid hidden"></div>
 
-    <!-- Digest panel (hidden by default) -->
+    <!-- Digest panel -->
     <div id="digestPanel" class="digest-panel hidden">
       <div class="digest-header">
         <h2>📋 This Week's Digest</h2>
@@ -124,9 +120,8 @@
       <div id="digestContent" class="digest-content"></div>
     </div>
 
-    <!-- Empty state -->
     <div id="emptyState" class="empty-state hidden">
-      <p id="emptyMsg">No articles found. Try a different topic or search term.</p>
+      <p id="emptyMsg">No articles found.</p>
     </div>
 
   </main>
@@ -134,18 +129,9 @@
   <!-- ===== FOOTER ===== -->
   <footer class="site-footer">
     <div class="footer-inner">
-      <div>
-        <strong>Carbon Markets Daily</strong> — aggregated from Google News and direct RSS feeds.
-        Updates every 30 minutes.
-      </div>
-      <div class="footer-sources">
-        Sources include Carbon Brief · Yale E360 · Climate Home News · Inside Climate News ·
-        The Guardian · Carbon180 · IISD · and Google News for broader coverage.
-      </div>
-      <div class="footer-disclaimer">
-        Paywall detection is best-effort. Summaries for paywalled articles are sourced from
-        RSS feeds and article metadata — not the full text.
-      </div>
+      <div><strong>Carbon Markets Daily</strong> — aggregated from Google News, RSS feeds, and company blogs. Updates every 30 minutes.</div>
+      <div class="footer-sources">Carbon Brief · Yale E360 · Climate Home News · Inside Climate News · The Guardian · Carbon180 · IISD · Mongabay · Grist · Ember Climate · RMI · IEEFA · Canary Media · Heatmap · CleanTechnica · The Hill · RFF · WRI · and 25 CDR/VCM company blogs.</div>
+      <div class="footer-disclaimer">Paywall detection is best-effort. Summaries for paywalled articles use RSS feed metadata.</div>
     </div>
   </footer>
 

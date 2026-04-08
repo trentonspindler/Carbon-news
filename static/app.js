@@ -6,16 +6,16 @@
 
 let currentTopic      = "all";
 let currentRegion     = "all";
+let currentSource     = "all";
 let currentSearch     = "";
 let currentPaywall    = "all";
-let currentWeekOffset = 0;       // 0 = this week, -1 = last week, etc.
+let currentWeekOffset = 0;
 let debounceTimer     = null;
 let refreshPoller     = null;
 let refreshing        = false;
 
 let allArticles       = [];
-const REGION_META     = {};      // populated from DOM on load
-let weekMeta          = [];      // populated from /api/weeks
+let weekMeta          = [];
 
 // ── Topic metadata ────────────────────────────────────────────────────────────
 
@@ -66,13 +66,13 @@ async function loadArticles({ showSpinner = true } = {}) {
     $id("statsBar").classList.add("hidden");
     $id("emptyState").classList.add("hidden");
     $id("digestPanel").classList.add("hidden");
-    $id("regionBanner").classList.add("hidden");
   }
 
   try {
     const params = new URLSearchParams({
       topic:     currentTopic,
       region:    currentRegion,
+      source:    currentSource,
       search:    currentSearch,
       paywalled: currentPaywall,
       week:      currentWeekOffset,
@@ -82,6 +82,10 @@ async function loadArticles({ showSpinner = true } = {}) {
     const data = await res.json();
 
     allArticles = data.articles || [];
+    // Populate source dropdown with all sources from unfiltered articles
+    if (currentTopic === "all" && currentRegion === "all" && currentSource === "all" && !currentSearch) {
+      populateSourceDropdown(allArticles);
+    }
     renderArticles(allArticles);
     updateCacheLabel(data.cache_age_minutes);
     updateStats(data);
@@ -199,45 +203,87 @@ function updateCacheLabel(ageMinutes) {
 
 // ── Filtering ─────────────────────────────────────────────────────────────────
 
-function setTopic(topic, btn) {
-  currentTopic = topic;
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  if (btn) btn.classList.add("active");
+function setTopic(value) {
+  currentTopic = value;
+  const sel = $id("topicSelect");
+  if (sel) sel.value = value;
+  renderActiveFilters();
   loadArticles();
 }
 
-function setRegion(region, btn) {
-  currentRegion = region;
-  document.querySelectorAll(".region-chip").forEach(c => c.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-  updateRegionBanner();
+function setRegion(value) {
+  currentRegion = value;
+  const sel = $id("regionSelect");
+  if (sel) sel.value = value;
+  renderActiveFilters();
   loadArticles();
 }
 
 function setRegionById(regionId) {
-  const btn = document.querySelector(`.region-chip[data-region="${regionId}"]`);
-  setRegion(regionId, btn);
-  // Scroll the region tab row to show the selected chip
-  if (btn) btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  setRegion(regionId);
 }
 
-function updateRegionBanner() {
-  const banner = $id("regionBanner");
-  if (!banner) return;
-  if (currentRegion === "all") {
-    banner.classList.add("hidden");
+function setSource(value) {
+  currentSource = value;
+  const sel = $id("sourceSelect");
+  if (sel) sel.value = value;
+  renderActiveFilters();
+  loadArticles();
+}
+
+function renderActiveFilters() {
+  const bar = $id("activeFilters");
+  if (!bar) return;
+  const pills = [];
+
+  if (currentTopic !== "all") {
+    const label = $id("topicSelect")?.selectedOptions[0]?.text || currentTopic;
+    pills.push({ label, clear: () => setTopic("all") });
+  }
+  if (currentRegion !== "all") {
+    const label = $id("regionSelect")?.selectedOptions[0]?.text || currentRegion;
+    pills.push({ label, clear: () => setRegion("all") });
+  }
+  if (currentSource !== "all") {
+    pills.push({ label: currentSource, clear: () => setSource("all") });
+  }
+  if (currentSearch) {
+    pills.push({ label: `"${currentSearch}"`, clear: () => { currentSearch = ""; $id("searchInput").value = ""; loadArticles(); } });
+  }
+
+  if (!pills.length) {
+    bar.classList.add("hidden");
+    bar.innerHTML = "";
     return;
   }
-  const rm = REGION_META[currentRegion];
-  if (rm) {
-    banner.textContent = `${rm.flag} Showing articles tagged: ${rm.name}`;
-    banner.classList.remove("hidden");
-  }
+  bar.classList.remove("hidden");
+  bar.innerHTML = pills.map((p, i) => `
+    <span class="active-filter-pill">
+      ${esc(p.label)}
+      <button onclick="clearFilter(${i})" title="Remove filter">✕</button>
+    </span>`).join("");
+  // Store clear functions
+  bar._clearFns = pills.map(p => p.clear);
+}
+
+function clearFilter(i) {
+  const bar = $id("activeFilters");
+  if (bar && bar._clearFns && bar._clearFns[i]) bar._clearFns[i]();
 }
 
 function applyFilters() {
   currentPaywall = $id("paywallFilter").value;
+  renderActiveFilters();
   loadArticles();
+}
+
+async function populateSourceDropdown(articles) {
+  const sel = $id("sourceSelect");
+  if (!sel) return;
+  const prev = sel.value;
+  const sources = [...new Set(articles.map(a => a.source).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+  sel.innerHTML = `<option value="all">All Sources (${sources.length})</option>` +
+    sources.map(s => `<option value="${esc(s)}" ${s === prev ? "selected" : ""}>${esc(s)}</option>`).join("");
 }
 
 // ── Week navigation ───────────────────────────────────────────────────────────
@@ -448,18 +494,7 @@ setInterval(() => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Build REGION_META from rendered chips
-  document.querySelectorAll(".region-chip[data-region]").forEach(chip => {
-    const id = chip.dataset.region;
-    if (id && id !== "all") {
-      const text  = chip.textContent.trim();
-      const parts = text.split(" ");
-      REGION_META[id] = { flag: parts[0], name: parts.slice(1).join(" ") };
-    }
-  });
-
-  // Render default week pills immediately, then fetch real counts
   renderWeekPills();
-  loadWeekMeta();   // updates pill counts asynchronously
+  loadWeekMeta();
   loadArticles();
 });

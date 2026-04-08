@@ -29,6 +29,7 @@ def articles():
     region           = request.args.get("region",   "all").strip()
     search           = request.args.get("search",   "").lower().strip()
     paywalled_filter = request.args.get("paywalled","all")
+    source           = request.args.get("source",   "all").strip()
     week_offset      = int(request.args.get("week", "0"))
 
     # Week 0 = live cache; past weeks come from the DB
@@ -45,6 +46,9 @@ def articles():
 
     if region != "all":
         data = [a for a in data if region in (a.get("regions") or [])]
+
+    if source != "all":
+        data = [a for a in data if (a.get("source") or "").lower() == source.lower()]
 
     if search:
         data = [
@@ -78,6 +82,14 @@ def articles():
 @app.route("/api/weeks")
 def weeks():
     return jsonify(get_available_weeks())
+
+
+@app.route("/api/sources")
+def sources():
+    """Return sorted list of distinct sources from current-week articles."""
+    data = get_articles()
+    seen = sorted({a["source"] for a in data if a.get("source")}, key=str.lower)
+    return jsonify(seen)
 
 
 @app.route("/api/refresh", methods=["POST"])

@@ -42,36 +42,36 @@ logger = logging.getLogger(__name__)
 
 CDR_SOURCES = [
     # ── Registries & standards ──────────────────────────────────────────────
-    {"name": "Verra",             "home": "https://verra.org",                  "blog": "/news/",            "topic": "vcm"},
-    {"name": "Gold Standard",     "home": "https://www.goldstandard.org",        "blog": "/blog",             "topic": "vcm"},
-    {"name": "American Carbon Registry", "home": "https://americancarbonregistry.org", "blog": "/news/",     "topic": "vcm"},
+    {"name": "Verra",             "home": "https://verra.org",                  "blog": "/news/"},
+    {"name": "Gold Standard",     "home": "https://www.goldstandard.org",        "blog": "/blog"},
+    {"name": "American Carbon Registry", "home": "https://americancarbonregistry.org", "blog": "/news/"},
     # ── CDR marketplaces & platforms ────────────────────────────────────────
-    {"name": "Puro.earth",        "home": "https://puro.earth",                 "blog": "/blog",             "topic": "cdr"},
-    {"name": "CarbonFuture",      "home": "https://www.carbonfuture.earth",      "blog": "/blog",             "topic": "cdr"},
-    {"name": "CDR.fyi",           "home": "https://www.cdr.fyi",                "blog": "/updates",          "topic": "cdr"},
-    {"name": "Supercritical",     "home": "https://gosupercritical.com",         "blog": "/blog",             "topic": "cdr"},
+    {"name": "Puro.earth",        "home": "https://puro.earth",                 "blog": "/blog"},
+    {"name": "CarbonFuture",      "home": "https://www.carbonfuture.earth",      "blog": "/blog"},
+    {"name": "CDR.fyi",           "home": "https://www.cdr.fyi",                "blog": "/updates"},
+    {"name": "Supercritical",     "home": "https://gosupercritical.com",         "blog": "/blog"},
     # ── CDR technology companies ─────────────────────────────────────────────
-    {"name": "Climeworks",        "home": "https://climeworks.com",              "blog": "/news",             "topic": "cdr"},
-    {"name": "Heirloom Carbon",   "home": "https://www.heirloomcarbon.com",      "blog": "/news",             "topic": "cdr"},
-    {"name": "Charm Industrial",  "home": "https://charmindustrial.com",         "blog": "/news",             "topic": "cdr"},
-    {"name": "Running Tide",      "home": "https://www.runningtide.com",         "blog": "/news",             "topic": "cdr"},
-    {"name": "Lithos Carbon",     "home": "https://www.lithoscarbon.com",        "blog": "/blog",             "topic": "cdr"},
-    {"name": "CULA",              "home": "https://www.cula.com",               "blog": "/blog",             "topic": "cdr"},
-    {"name": "Absolute Climate",  "home": "https://www.absoluteclimate.com",     "blog": "/blog",             "topic": "cdr"},
+    {"name": "Climeworks",        "home": "https://climeworks.com",              "blog": "/news"},
+    {"name": "Heirloom Carbon",   "home": "https://www.heirloomcarbon.com",      "blog": "/news"},
+    {"name": "Charm Industrial",  "home": "https://charmindustrial.com",         "blog": "/news"},
+    {"name": "Running Tide",      "home": "https://www.runningtide.com",         "blog": "/news"},
+    {"name": "Lithos Carbon",     "home": "https://www.lithoscarbon.com",        "blog": "/blog"},
+    {"name": "CULA",              "home": "https://www.cula.com",               "blog": "/blog"},
+    {"name": "Absolute Climate",  "home": "https://www.absoluteclimate.com",     "blog": "/blog"},
     # ── MRV & ratings ───────────────────────────────────────────────────────
-    {"name": "Isometric",         "home": "https://isometric.com",              "blog": "/blog",             "topic": "vcm"},
-    {"name": "BeZero Carbon",     "home": "https://bezerocarbon.com",           "blog": "/insights",         "topic": "vcm"},
-    {"name": "Sylvera",           "home": "https://www.sylvera.com",            "blog": "/resources/blog",   "topic": "vcm"},
-    {"name": "Carbon Direct",     "home": "https://www.carbon-direct.com",      "blog": "/insights",         "topic": "cdr"},
+    {"name": "Isometric",         "home": "https://isometric.com",              "blog": "/blog"},
+    {"name": "BeZero Carbon",     "home": "https://bezerocarbon.com",           "blog": "/insights"},
+    {"name": "Sylvera",           "home": "https://www.sylvera.com",            "blog": "/resources/blog"},
+    {"name": "Carbon Direct",     "home": "https://www.carbon-direct.com",      "blog": "/insights"},
     # ── Nature-based / blue carbon ───────────────────────────────────────────
-    {"name": "Mangrove Systems",  "home": "https://www.mangrove.systems",       "blog": "/blog",             "topic": "nature"},
-    {"name": "Pachama",           "home": "https://pachama.com",                "blog": "/blog",             "topic": "nature"},
-    {"name": "South Pole",        "home": "https://www.southpole.com",          "blog": "/insights",         "topic": "nature"},
-    {"name": "Terrasos",          "home": "https://terrasos.co",                "blog": "/news",             "topic": "nature"},
+    {"name": "Mangrove Systems",  "home": "https://www.mangrove.systems",       "blog": "/blog"},
+    {"name": "Pachama",           "home": "https://pachama.com",                "blog": "/blog"},
+    {"name": "South Pole",        "home": "https://www.southpole.com",          "blog": "/insights"},
+    {"name": "Terrasos",          "home": "https://terrasos.co",                "blog": "/news"},
     # ── Corporate / market infrastructure ───────────────────────────────────
-    {"name": "Climate Impact X",  "home": "https://www.climateimpactx.com",     "blog": "/news",             "topic": "vcm"},
-    {"name": "IETA",              "home": "https://www.ieta.org",               "blog": "/resources/news",   "topic": "policy"},
-    {"name": "Ecosystem Marketplace", "home": "https://www.ecosystemmarketplace.com", "blog": "/articles/", "topic": "vcm"},
+    {"name": "Climate Impact X",  "home": "https://www.climateimpactx.com",     "blog": "/news"},
+    {"name": "IETA",              "home": "https://www.ieta.org",               "blog": "/resources/news"},
+    {"name": "Ecosystem Marketplace", "home": "https://www.ecosystemmarketplace.com", "blog": "/articles/"},
 ]
 
 # Common RSS path suffixes to probe in order
@@ -111,7 +111,7 @@ def fetch_all_company_blogs() -> list[dict]:
 
 def _fetch_source(src: dict) -> list[dict]:
     home  = src["home"].rstrip("/")
-    topic = src["topic"]
+    topic = "companies"   # all company blog posts go under the Companies tab
     name  = src["name"]
 
     # 1. Try RSS

@@ -172,6 +172,7 @@ TOPICS = [
         "name": "CDR & VCM Companies",
         "icon": "🏗️",
         "color": "#0e7490",
+        "max_queries": 25,
         "queries": [
             # Registries & standards
             "Verra VCS carbon registry news",
@@ -758,7 +759,8 @@ def get_articles(force_refresh: bool = False) -> list[dict]:
     t.start()
 
     for topic in TOPICS:
-        for query in topic["queries"][:3]:  # 3 queries per topic
+        limit = topic.get("max_queries", 3)
+        for query in topic["queries"][:limit]:
             t = threading.Thread(
                 target=guarded_gn, args=(query, topic["id"]), daemon=True
             )
