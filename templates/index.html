@@ -135,6 +135,13 @@
     </div>
   </footer>
 
+  <script>
+    const REGION_META = {
+      {% for r in regions %}
+      {{ r.id | tojson }}: { name: {{ r.name | tojson }}, flag: {{ r.flag | tojson }} },
+      {% endfor %}
+    };
+  </script>
   <script src="/static/app.js"></script>
 </body>
 </html>
