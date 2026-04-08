@@ -87,9 +87,11 @@ TOPICS = [
         "queries": [
             '"voluntary carbon market"',
             '"carbon credits" VCM trading',
-            '"carbon offsets" news market',
             "Verra Gold Standard carbon registry",
             "ICVCM carbon integrity council",
+            '"carbon offsets" market news 2025',
+            "ACR \"American Carbon Registry\" OR \"Climate Action Reserve\" credits",
+            "carbon credit price spot market",
         ],
     },
     {
@@ -100,9 +102,11 @@ TOPICS = [
         "queries": [
             '"direct air capture" carbon',
             '"carbon dioxide removal" CDR technology',
+            '"carbon removal" credits offtake purchase agreement',
             '"enhanced weathering" carbon removal',
             '"biochar" carbon sequestration credits',
             '"BECCS" bioenergy carbon capture storage',
+            "ocean carbon removal CDR",
         ],
     },
     {
@@ -116,6 +120,8 @@ TOPICS = [
             '"blue carbon" mangrove seagrass credits',
             '"soil carbon" sequestration credits',
             "avoided deforestation carbon offsets",
+            '"peatland" OR "wetland" carbon credits',
+            "agroforestry carbon sequestration",
         ],
     },
     {
@@ -127,8 +133,10 @@ TOPICS = [
             '"Article 6" Paris Agreement carbon trading',
             "CORSIA aviation carbon offsets",
             "VCMI carbon claims framework",
+            '"carbon border adjustment" CBAM',
             "SBTi net zero science based targets carbon",
-            "carbon market integrity standard",
+            "carbon market greenwashing integrity",
+            "COP climate carbon market agreement",
         ],
     },
     {
@@ -139,7 +147,9 @@ TOPICS = [
         "queries": [
             '"EU ETS" carbon allowance price',
             "California cap-and-trade carbon market",
-            '"carbon allowances" price ETS',
+            '"UK ETS" carbon market',
+            '"China ETS" national carbon market',
+            '"carbon allowances" EUA price',
             "emissions trading scheme ETS news",
         ],
     },
@@ -150,33 +160,21 @@ TOPICS = [
         "color": "#1e40af",
         "queries": [
             "corporate carbon credits purchase net zero",
-            "carbon market investment funding",
+            "carbon market investment funding startup",
+            '"carbon removal" offtake agreement Microsoft Stripe Google',
             '"net zero" carbon offset corporate commitment',
-            "carbon finance climate tech deal investment",
+            "carbon finance climate tech deal",
+            "ESG carbon disclosure reporting",
         ],
     },
 ]
 
 DIRECT_FEEDS = [
+    # --- Carbon & Climate specialists ---
     {
         "url": "https://www.carbonbrief.org/feed/",
         "source": "Carbon Brief",
         "topic": "vcm",
-    },
-    {
-        "url": "https://insideclimatenews.org/feed/",
-        "source": "Inside Climate News",
-        "topic": "policy",
-    },
-    {
-        "url": "https://www.theguardian.com/environment/climate-crisis/rss",
-        "source": "The Guardian",
-        "topic": "vcm",
-    },
-    {
-        "url": "https://e360.yale.edu/feed",
-        "source": "Yale E360",
-        "topic": "nature",
     },
     {
         "url": "https://www.climatechangenews.com/feed/",
@@ -189,8 +187,93 @@ DIRECT_FEEDS = [
         "topic": "cdr",
     },
     {
+        "url": "https://carbontracker.org/feed/",
+        "source": "Carbon Tracker",
+        "topic": "compliance",
+    },
+    # --- Energy & climate think tanks ---
+    {
+        "url": "https://ember-climate.org/feed/",
+        "source": "Ember Climate",
+        "topic": "compliance",
+    },
+    {
+        "url": "https://rmi.org/feed/",
+        "source": "Rocky Mountain Institute",
+        "topic": "cdr",
+    },
+    {
+        "url": "https://ieefa.org/feed/",
+        "source": "IEEFA",
+        "topic": "compliance",
+    },
+    {
+        "url": "https://www.rff.org/feed/",
+        "source": "Resources for the Future",
+        "topic": "policy",
+    },
+    # --- Nature & conservation ---
+    {
+        "url": "https://news.mongabay.com/feed/",
+        "source": "Mongabay",
+        "topic": "nature",
+    },
+    {
+        "url": "https://e360.yale.edu/feed",
+        "source": "Yale E360",
+        "topic": "nature",
+    },
+    {
+        "url": "https://www.wri.org/rss.xml",
+        "source": "World Resources Institute",
+        "topic": "nature",
+    },
+    # --- Broad climate news ---
+    {
+        "url": "https://insideclimatenews.org/feed/",
+        "source": "Inside Climate News",
+        "topic": "policy",
+    },
+    {
+        "url": "https://www.theguardian.com/environment/climate-crisis/rss",
+        "source": "The Guardian",
+        "topic": "vcm",
+    },
+    {
+        "url": "https://grist.org/feed/",
+        "source": "Grist",
+        "topic": "policy",
+    },
+    {
+        "url": "https://www.canarymedia.com/feed",
+        "source": "Canary Media",
+        "topic": "corporate",
+    },
+    {
+        "url": "https://heatmap.news/feed",
+        "source": "Heatmap News",
+        "topic": "compliance",
+    },
+    # --- Tech & clean energy ---
+    {
+        "url": "https://cleantechnica.com/feed/",
+        "source": "CleanTechnica",
+        "topic": "cdr",
+    },
+    {
+        "url": "https://www.energymonitor.ai/feed/",
+        "source": "Energy Monitor",
+        "topic": "compliance",
+    },
+    # --- Policy & international ---
+    {
         "url": "https://sdg.iisd.org/news/feed/",
         "source": "IISD SDG",
+        "topic": "policy",
+    },
+    {
+        "url": "https://thehill.com/policy/energy-environment/feed/",
+        "source": "The Hill",
         "topic": "policy",
     },
 ]
@@ -470,7 +553,7 @@ def get_articles(force_refresh: bool = False) -> list[dict]:
                     all_articles.append(a)
 
     threads = []
-    sem = threading.Semaphore(6)  # cap concurrent outbound requests
+    sem = threading.Semaphore(10)  # cap concurrent outbound requests
 
     def guarded_gn(query, topic_id):
         with sem:
@@ -486,7 +569,7 @@ def get_articles(force_refresh: bool = False) -> list[dict]:
         t.start()
 
     for topic in TOPICS:
-        for query in topic["queries"][:2]:  # 2 queries per topic to stay polite
+        for query in topic["queries"][:3]:  # 3 queries per topic
             t = threading.Thread(
                 target=guarded_gn, args=(query, topic["id"]), daemon=True
             )
