@@ -287,172 +287,116 @@ REGIONS = [
         "id": "us",
         "name": "United States",
         "flag": "🇺🇸",
-        "keywords": [
-            "united states carbon", "u.s. carbon", "u.s. climate",
-            "american carbon", "us carbon market", "us epa carbon",
-            "federal carbon", "congress carbon", "senate climate",
-        ],
+        # Avoid bare "us" — too many false positives; use longer forms
+        "keywords": ["united states", " u.s.", "u.s.a", "american carbon",
+                     "us epa", "us carbon", "u.s carbon"],
     },
     {
         "id": "california",
         "name": "California",
         "flag": "🏛️",
-        "keywords": [
-            "california carbon", "california cap-and-trade",
-            "carb carbon", "california air resources board",
-            "california offset", "california climate",
-        ],
+        "keywords": ["california", "carb "],  # CARB = CA Air Resources Board
     },
     {
         "id": "louisiana",
         "name": "Louisiana",
         "flag": "🌊",
-        "keywords": [
-            "louisiana carbon", "louisiana blue carbon",
-            "louisiana wetland", "louisiana offset", "louisiana climate",
-            "gulf coast carbon", "louisiana forest carbon",
-        ],
+        "keywords": ["louisiana"],
     },
     {
         "id": "texas",
         "name": "Texas",
         "flag": "⭐",
-        "keywords": [
-            "texas carbon", "texas carbon capture", "texas ccs",
-            "permian carbon", "texas climate", "texas emissions",
-        ],
+        "keywords": ["texas"],
     },
     {
         "id": "eu",
         "name": "European Union",
         "flag": "🇪🇺",
-        "keywords": [
-            "eu ets", "european union carbon", "european carbon market",
-            "brussels carbon", "cbam", "carbon border adjustment",
-            "eua carbon", "europe carbon credit", "eu climate",
-        ],
+        "keywords": ["european union", "european carbon", "eu ets", " eua ",
+                     "cbam", "carbon border adjustment", "europe carbon",
+                     "brussels carbon"],
     },
     {
         "id": "uk",
         "name": "United Kingdom",
         "flag": "🇬🇧",
-        "keywords": [
-            "uk ets", "united kingdom carbon", "britain carbon",
-            "british carbon", "uk carbon market", "uk climate",
-        ],
+        "keywords": ["united kingdom", "uk ets", "britain", "british carbon",
+                     "uk carbon"],
     },
     {
         "id": "finland",
         "name": "Finland",
         "flag": "🇫🇮",
-        "keywords": [
-            "finland carbon", "finnish carbon", "finland climate",
-            "finland cdr", "finland direct air capture",
-        ],
+        "keywords": ["finland", "finnish"],
     },
     {
         "id": "norway",
         "name": "Norway",
         "flag": "🇳🇴",
-        "keywords": [
-            "norway carbon", "norwegian carbon", "longship ccs",
-            "norway ccs", "norway climate", "norway carbon capture",
-        ],
+        "keywords": ["norway", "norwegian", "longship"],
     },
     {
         "id": "sweden",
         "name": "Sweden",
         "flag": "🇸🇪",
-        "keywords": [
-            "sweden carbon", "swedish carbon", "stockholm carbon",
-            "sweden cdr", "sweden climate",
-        ],
+        "keywords": ["sweden", "swedish"],
     },
     {
         "id": "brazil",
         "name": "Brazil",
         "flag": "🇧🇷",
-        "keywords": [
-            "brazil carbon", "brazilian carbon", "amazon carbon",
-            "deforestation brazil", "brazil redd", "brazil climate",
-            "brazil carbon market",
-        ],
+        "keywords": ["brazil", "brazilian", "amazon carbon", "amazon deforestation"],
     },
     {
         "id": "indonesia",
         "name": "Indonesia",
         "flag": "🇮🇩",
-        "keywords": [
-            "indonesia carbon", "indonesian carbon", "indonesia forest carbon",
-            "indonesia redd", "borneo carbon", "indonesia climate",
-        ],
+        "keywords": ["indonesia", "indonesian", "borneo"],
     },
     {
         "id": "australia",
         "name": "Australia",
         "flag": "🇦🇺",
-        "keywords": [
-            "australia carbon", "australian carbon", "erf australia",
-            "australia carbon credit", "australia climate",
-            "clean energy regulator australia",
-        ],
+        "keywords": ["australia", "australian", " erf "],  # ERF = Emissions Reduction Fund
     },
     {
         "id": "canada",
         "name": "Canada",
         "flag": "🇨🇦",
-        "keywords": [
-            "canada carbon", "canadian carbon", "canada carbon pricing",
-            "canada climate", "british columbia carbon",
-        ],
+        "keywords": ["canada", "canadian", "british columbia carbon"],
     },
     {
         "id": "singapore",
         "name": "Singapore",
         "flag": "🇸🇬",
-        "keywords": [
-            "singapore carbon", "singapore carbon market",
-            "singapore carbon credit", "singapore climate",
-        ],
+        "keywords": ["singapore"],
     },
     {
         "id": "japan",
         "name": "Japan",
         "flag": "🇯🇵",
-        "keywords": [
-            "japan carbon", "japanese carbon", "gx league",
-            "japan carbon market", "japan climate",
-            "japan carbon credit", "japan ets",
-        ],
+        "keywords": ["japan", "japanese carbon", "gx league"],
     },
     {
         "id": "china",
         "name": "China",
         "flag": "🇨🇳",
-        "keywords": [
-            "china carbon", "chinese carbon", "china ets",
-            "china emissions trading", "china carbon market",
-            "china climate",
-        ],
+        "keywords": ["china carbon", "china ets", "chinese carbon",
+                     "china emissions trading", "china climate"],
     },
     {
         "id": "africa",
         "name": "Africa",
         "flag": "🌍",
-        "keywords": [
-            "kenya carbon", "africa carbon", "african carbon",
-            "africa carbon market", "africa carbon credit",
-            "ghana carbon", "nigeria carbon", "south africa carbon",
-        ],
+        "keywords": ["africa", "african carbon", "kenya", "ghana carbon",
+                     "nigeria carbon", "tanzania carbon", "zimbabwe carbon"],
     },
     {
         "id": "colombia",
         "name": "Colombia",
         "flag": "🇨🇴",
-        "keywords": [
-            "colombia carbon", "colombian carbon", "colombia carbon market",
-            "colombia redd", "colombia climate",
-        ],
+        "keywords": ["colombia", "colombian"],
     },
 ]
 
