@@ -82,8 +82,8 @@ async function loadArticles({ showSpinner = true } = {}) {
     const data = await res.json();
 
     allArticles = data.articles || [];
-    // Populate source dropdown with all sources from unfiltered articles
-    if (currentTopic === "all" && currentRegion === "all" && currentSource === "all" && !currentSearch) {
+    // Populate source dropdown with sources relevant to current topic/region context
+    if (currentSource === "all") {
       populateSourceDropdown(allArticles);
     }
     renderArticles(allArticles);
@@ -102,7 +102,8 @@ function renderArticles(articles) {
   if (!articles.length) {
     const msg = $id("emptyMsg");
     const anyFilterActive = currentTopic !== "all" || currentRegion !== "all" ||
-                            currentSource !== "all" || currentSearch || currentWeekOffset !== 0;
+                            currentSource !== "all" || currentSearch ||
+                            currentWeekOffset !== 0 || currentPaywall !== "all";
 
     if (!anyFilterActive) {
       // Likely still warming up on first deploy — auto-retry
@@ -260,8 +261,12 @@ function renderActiveFilters() {
   if (currentSource !== "all") {
     pills.push({ label: currentSource, clear: () => setSource("all") });
   }
+  if (currentPaywall !== "all") {
+    const label = currentPaywall === "free" ? "Free only" : "Paywalled only";
+    pills.push({ label, clear: () => { currentPaywall = "all"; $id("paywallFilter").value = "all"; renderActiveFilters(); loadArticles(); } });
+  }
   if (currentSearch) {
-    pills.push({ label: `"${currentSearch}"`, clear: () => { currentSearch = ""; $id("searchInput").value = ""; loadArticles(); } });
+    pills.push({ label: `"${currentSearch}"`, clear: () => { currentSearch = ""; $id("searchInput").value = ""; renderActiveFilters(); loadArticles(); } });
   }
 
   if (!pills.length) {
@@ -293,10 +298,9 @@ function applyFilters() {
 async function populateSourceDropdown(articles) {
   const sel = $id("sourceSelect");
   if (!sel) return;
-  const prev = sel.value;
   const sources = [...new Set(articles.map(a => a.source).filter(Boolean))].sort((a,b) => a.localeCompare(b));
   sel.innerHTML = `<option value="all">All Sources (${sources.length})</option>` +
-    sources.map(s => `<option value="${esc(s)}" ${s === prev ? "selected" : ""}>${esc(s)}</option>`).join("");
+    sources.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
 }
 
 // ── Week navigation ───────────────────────────────────────────────────────────
